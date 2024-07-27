@@ -1,0 +1,1299 @@
+﻿Laravel Notes
+Concepts
+* Installation and setup 
+* Database connection and table creation
+* Table schema
+* Fake data 
+* Controller
+* Routes
+* Middleware
+Topics
+* Installation
+* Xampp
+* Migrations
+* Factory
+* Seeder
+* Controller
+* Routes
+* Model
+* Middleware
+* View
+
+
+1. Intro
+2. Composer
+3. Installation
+4. First page
+5. Routing
+6. middleware
+7. Views
+8. Controller
+9. Model
+10. Query builder
+11. Eloquent ORM
+12. Artisan command
+13. Elaquent relationship
+14. Form validation
+15. Session
+16. File upload
+17. Pagination
+18. Fetch data from DB
+19. Insert data from DB
+20. Upload data in DB
+21. Delete data from DB
+22. Join queries
+23. How to send an email
+24. How to create a thumbnail
+
+
+
+
+1. Installation
+Composer create-project laravel/laravel:^10.0 
+Php artisan serve
+            Database
+.env
+Php artisan migrate
+Php artisan make:model        - -all
+
+
+2. Migration
+The db connection that should be used by the migration.
+Protected $connection = ‘-----db’ ;
+            Php artisan migrate
+            Php artisan migrate:rollback –step=5
+            Php artisan migrate:reset
+            Php artisan migrate:refresh –seed
+            Php artisan migrate:refresh –step=5
+            Php artisan migrate:fresh  --seed
+            Php artisan migrate:fresh –database =admin
+Column types
+
+
+Integer -  Id , bigIncrements   ,bigInteger ,  binary , decimal,  Double ,  Float,  Integer  
+                mediumIncrements,    mediumInteger , smallIncrements ,  smallInteger, tinyIncrements  ,
+                 unsignedBigInteger    unsignedDecimal   unsignedInteger unsignedMediumInteger 
+                unsignedSmallInteger unsignedTinyInteger  , tinyInteger   ,Increments 
+String  -   char  , lineString ,  longText ,  string  , Text  , tinyText ,mediumText ,multiLineString 
+Enum -  Enum
+Boolean -  boolean
+Date - dateTimeTz ,   dateTime,  date,  timeTz ,   Time   ,       timestampTz  ,Timestamp ,  
+            timestampsTz , Timestamps    , year ,nullableTimestamps
+ForeignId  -  foreignId , foreignId  , foreignIdFor ,foreignUlid ,  foreignUuid,
+          Geometry - Geometry, geometryCollection , multiPoint,  multiPolygon ,  point   ,Polygon ,
+Ip - ip,  ipAddress , macAddress 
+Json -Json  ,Jsonb
+rememberToken - rememberToken 
+Morphs - Morphs ,,nullableMorphs , nullableUlidMorphs,nullableUuidMorphs , ulidMorphs uuidMorphs 
+             Ulid Uuid
+Set -Set
+Delete - softDeletesTz   ,  softDeletes ,   
+
+
+     
+Column modifier 
+
+
+->after('column')
+->autoIncrement()
+->charset('utf8mb4')
+->collation('utf8mb4_unicode_ci')
+->comment('my comment')
+->default($value)
+->first()
+->from($integer)
+->nullable($value = true)
+->invisible()
+->storedAs($expression)
+->unsigned()
+->useCurrent()
+->useCurrentOnUpdate()
+->virtualAs($expression)
+->generatedAs($expression)
+->always()
+->isGeometry()
+
+
+Index
+$table->primary('id');
+$table->primary(['id', 'parent_id']);
+$table->unique('email');
+$table->index('state');
+$table->fullText('body');
+$table->fullText('body')->language('english');
+$table->spatialIndex('location');
+ 
+Foreign
+$table->foreignId('user_id')->constrained(
+       table: 'users', indexName: 'posts_user_id'
+   );
+
+
+Factory
+https://github.com/fzaninotto/Faker?tab=readme-ov-file#fakerproviderinternet
+Factories
+Create seeder class
+Use faker\factory as Faker;
+Use App\models\product;
+$faker = Faker::create();
+for( $i =1; $i++ ; $i>=10){
+$product = new Product;
+$product->name=$faker->----;
+$product->price=$faker->--------;
+$product->category=$faker->--------;
+$product->description=$faker->----;
+$product->save();
+}
+
+
+php artisan db:seed --class = ProductAdminSeeder   
+
+
+
+
+Api
+Api
+—--------------------------------------------------------------------------
+
+
+DemoController—
+—--------------------------------------------------------------------
+Public function index(){
+
+
+$array = [
+[
+   ‘Name’ => ‘John Doe ’,
+    ‘Email ’ => ‘john@example.com’
+],
+[
+   ‘Name’ => ‘mark leo ’,
+    ‘Email ’ => ‘matn@example.com’
+],
+[
+   ‘Name’ => ‘harry potter ’,
+    ‘Email ’ => ‘harry@example.com’
+],
+[
+   ‘Name’ => ‘albert ’,
+    ‘Email ’ => ‘albert@example.com’
+]
+];
+
+
+Return response()->json([
+‘message’=>’4 users found’,
+‘data’=>$array,
+‘status’=> true
+], 200);
+}
+
+
+Route–
+Use App\Http\Controller\DemoController
+
+
+Route::get(“/demo”,[DemoController::class,’index’]);
+-
+2.GET API
+Public function index(){
+
+
+$users = User::all();
+Return response()->json([
+‘Message ’ => count($users) . user found,
+‘Data ’ => $users,
+‘Status’ => true,
+], 200);
+
+
+}
+ Routes–
+
+
+Route::get(‘/users’,[DemoController::class,’index’]);
+
+
+GET API BY ID..
+
+
+Public function show($id){
+
+
+$user = User::find($id);
+
+
+if($user != null){
+
+
+Return response()->json([
+‘Message ’ => ‘Record found’,
+‘Data ’ => $users,
+‘Status’ => true,
+], 200);
+
+
+}else{
+
+
+Return response()->json([
+‘Message ’ => ‘Record not found’,
+‘Data ’ => [],
+‘Status’ => true,
+],200);
+}
+Routes–
+Route::get(‘/user/{user}’,[UserController::class,’show’]);
+
+
+
+
+POST API 
+Use Illuminate\Http\Request;
+Use Illuminate|Support\Facades\Validator;
+
+
+
+
+Public function store (Request $request){
+
+
+$validator= Validator::make($request->all),[
+
+
+‘Name’ => ‘required’,
+‘password’=>’required’,
+‘email’=>’required’,
+]);
+if($validator ->fails()){
+
+
+Return response()->json([
+‘Message ’ => ‘Please fix the errors’,
+‘Data ’ => $validator->error(),
+‘Status’ => false,
+],200);
+}
+$user = new User;
+$user->name= $request->name;
+$user->email = $request->email;
+$user->password = $request->password;
+$user->save();
+
+
+Return response()->json([
+‘Message ’ => ‘User add successfully’,
+‘Data ’ => $user,
+‘Status’ => true,
+],200);
+}
+Route–
+Route::post(‘/user’,[UserController::class,’store’]);
+
+
+
+
+PUT API -update
+ 
+Public function update (Request $request , $id){
+  $user = User::find($id);
+
+
+if($user == null){
+
+
+Return response()->json([
+‘Message ’ => ‘user not found’,
+‘Status’ => false,
+],200);
+}
+
+
+$validator= Validator::make($request->all),[
+
+
+‘Name’ => ‘required’,
+‘email’=>’required’,
+]);
+if($validator ->fails()){
+
+
+Return response()->json([
+‘Message ’ => ‘Please fix the errors’,
+‘Data ’ => $validator->error(),
+‘Status’ => false,
+],200);
+}
+
+
+$user->name= $request->name;
+$user->email = $request->email;
+$user->save();
+
+
+Return response()->json([
+‘Message ’ => ‘User updated successfully’,
+‘Data ’ => $user,
+‘Status’ => true,
+],200);
+}
+Routes–
+Route::put(‘/users/{user}’,[UserController::class,’update’]);
+
+
+
+
+#hashed in model
+
+
+DELETE API
+
+
+Public function destory(Request $request , $id)
+{
+$user = User::find($id);
+
+
+if($user == null){
+
+
+Return response()->json([
+‘Message ’ => ‘user not found’,
+‘Status’ => false,
+],200);
+}
+
+
+$user->delete();
+
+
+Return response()->json([
+‘Message ’ => ‘User deleted successfully’,
+‘Status’ => true,
+],200)
+}
+
+
+Route–
+Route::delete(‘/user’,[UserController::class,’destroy’]);
+
+
+—-------------------------------------------------------------------------------
+Image Upload
+
+
+public—> uploads–.... 
+
+
+
+
+Public function upload(Request $request){
+
+
+$validator = Validator::make($request->all(),[
+‘image’=>’ required | mines:png,jpg,jpeg,gif’,
+]);
+
+
+if($validator ->fails()){
+
+
+Return response()->json([
+‘Message ’ => ‘Please fix the errors’,
+‘Data ’ => $validator->error(),
+‘Status’ => false,
+],200);
+}
+
+
+$img = $request->image;
+$ext = $img->getClientOriginalExtension();
+$imageName = time().’.’.$ext;
+$img->move( public_path().’/uploads/’, $imageName);
+
+
+
+
+$image = new Image;
+$image->image = $imageName;
+$image->save();
+
+
+
+
+Return response()->json([
+‘Message ’ => ‘Image uploaded successfully’,
+‘Data ’ => $image,
+‘path’=>asset(‘/uploads/.$imageName’),
+‘Status’ => true,
+],200);
+
+
+
+
+}
+Route–
+Route::Post(‘/users’,[UserController::class,’upload’]);
+
+
+Database —
+Use Illuminate\support\facades\DB;
+
+
+1.Retrieving All Rows From a Table
+
+
+$user = DB::table(‘----’)->get();
+
+
+2.Retrieving a Single Row / Column From a Table
+$user = DB::table(‘---’)->where(‘name’,’john’)->first();
+$user = DB::table(‘---’)->where(‘name’,’john’)->value(‘email’);
+$user = DB::table(‘---’)->find(3);
+
+
+
+
+3.Retrieving a List of Column Values
+$user = DB::table(‘---’)->pluck(‘title’);
+$user = DB::table(‘---’)->pluck(‘title’,’name’);
+
+
+4.in chunking result —-chote chote hisse m
+$user = DB::table(‘---’)->orderBy(‘id’)->chunk(100,function(Collection $users){
+map/foreach
+
+
+Return false;
+});
+Update while chunking
+$user = DB::table(‘---’)->where(‘active’,false)
+->chunkById(100,function(Collection $users){
+map/foreach
+
+
+Return false;
+});
+
+
+Lazy
+$user = DB::table(‘---’)->orderBy(‘id’)->lazy()->each(function(Collection $users){
+
+
+});
+
+
+5.Aggregate
+$user = DB::table(‘---’)->count();
+$user = DB::table(‘---’)->max(‘price’);
+$user = DB::table(‘---’)->avg(‘price’)
+$user = DB::table(‘---’)->where(‘finalized’,1)->exists()
+$user = DB::table(‘---’)->where(‘finalized’,1)->doesntExist()
+
+
+6.Select Statement
+$user = DB::table(‘---’)->select(‘name’);
+
+
+7.Row Method
+selectRow
+
+
+
+
+8.Joins
+9.union
+10.where
+11.json
+12.group logic
+13.grouping,ordering,limit,offset
+14.insert 
+$user = DB::table(‘---’)->insert(
+[
+‘Email ’ => ‘kataya@hs.js’,
+‘vote’=>  0,
+],
+[
+‘Email ’ => ‘ajva@hs.js’,
+‘vote’=>  4,
+],
+)
+
+
+15.delete
+$user = DB::table(‘---’)->delete();
+$user = DB::table(‘---’)->where(‘vote’, ‘>’ , 23)->delete();
+$user = DB::table(‘---’)->truncate();
+
+
+
+
+16.pessimistic Locking
+$user = DB::table(‘---’)->where(‘vote’, ‘>’ , 23)->sharedLock()->get();
+$user = DB::table(‘---’)->where(‘vote’, ‘>’ , 23)->lockForUpdate()->get();
+
+
+16.debugging
+$user = DB::table(‘---’)->where(‘vote’, ‘>’ , 23)->dd();
+$user = DB::table(‘---’)->where(‘vote’, ‘>’ , 23)->dump();
+$user = DB::table(‘---’)->where(‘vote’, ‘>’ , 23)->dumpRowSql();
+$user = DB::table(‘---’)->where(‘vote’, ‘>’ , 23)->ddRowSql();
+
+
+
+
+4.eloquent—model..
+
+
+
+
+Php artisan make:model —---
+
+
+Php artisan make:model —---   –migration
+
+
+# Shortcut to generate a model, migration, factory, seeder, policy, controller, and form requests...
+php artisan make:model Flight --all
+
+
+php artisan model:show Flight
+
+
+
+
+The table associated with the model.
+protected $table = 'my_flights';
+
+
+protected $primaryKey = 'flight_id';
+
+
+Indicates if the model's ID is auto-incrementing.
+public $incrementing = false;
+
+
+The data type of the primary key ID.
+protected $keyType = 'string';
+  
+The attributes that should be cast
+Protected $casts=[
+‘email_verified_at’=>’datetime’,
+‘password’=>’hashed’,‘
+];
+
+
+const CREATED_AT = 'creation_date';
+   const UPDATED_AT = 'updated_date';
+
+
+
+
+The database connection that should be used by the model.
+   protected $connection = 'sqlite';
+
+
+The model's default values for attributes.
+protected $attributes = [
+       'options' => '[]',
+       'delayed' => false,
+   ];
+
+
+
+
+Retrieving
+use App\Models\----------;
+
+
+
+
+$---- = —------>all();
+
+
+$flights = Flight::where('active', 1)
+              ->orderBy('name')
+              ->take(10)
+              ->get();
+ 
+
+
+use App\Models\Flight;
+ 
+// Retrieve a model by its primary key...
+$flight = Flight::find(1);
+ 
+// Retrieve the first model matching the query constraints...
+$flight = Flight::where('active', 1)->first();
+ 
+// Alternative to retrieving the first model matching the query constraints...
+$flight = Flight::firstWhere('active', 1);
+
+
+
+
+$flight = Flight::findOrFail(1);
+ 
+$flight = Flight::where('legs', '>', 3)->firstOrFail();
+
+
+$count = Flight::where('active', 1)->count();
+ 
+$max = Flight::where('active', 1)->max('price');
+
+
+public function store(Request $request): RedirectResponse
+   {
+       // Validate the request...
+ 
+       $flight = new Flight;
+ 
+       $flight->name = $request->name;
+ 
+       $flight->save();
+ 
+       return redirect('/flights');
+   }
+$flight = Flight::create([
+   'name' => 'London to Paris',
+]);
+$flight = Flight::find(1);
+ 
+$flight->name = 'Paris to London';
+ 
+$flight->save();
+
+
+use App\Models\Flight;
+ 
+$flight = Flight::find(1);
+ 
+$flight->delete();
+Flight::truncate();
+Flight::destroy(1);
+ 
+Flight::destroy(1, 2, 3);
+ 
+Flight::destroy([1, 2, 3]);
+ 
+Flight::destroy(collect([1, 2, 3]));
+$deleted = Flight::where('active', 0)->delete();
+
+
+namespace App\Models;
+use Illuminate\Database\Eloquent\SoftDeletes; 
+use SoftDeletes;
+$flight->restore();
+$flight->history()->restore();
+
+
+use App\Models\Address;
+ 
+$shipping = Address::create([
+   'type' => 'shipping',
+   'line_1' => '123 Example Street',
+   'city' => 'Victorville',
+   'state' => 'CA',
+   'postcode' => '90001',
+]);
+ 
+$billing = $shipping->replicate()->fill([
+   'type' => 'billing'
+]);
+ 
+$billing->save();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+one-to-one relationship
+#user models
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+
+
+
+
+
+
+    * Get the phone associated with the user.
+return $this->hasOne(Phone::class);
+User::find(1)->phone;
+
+
+#phone  models
+return $this->hasOne(Phone::class, 'foreign_key');
+ inverse of a hasOne relationship using the belongsTo method:
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+
+
+
+class Phone extends Model
+{
+   /**
+    * Get the user that owns the phone.
+    */
+   public function user(): BelongsTo
+   {
+       return $this->belongsTo(User::class);
+   }
+}
+
+
+Get the user that owns the phone.
+*/
+public function user(): BelongsTo
+{
+   return $this->belongsTo(User::class, 'foreign_key');
+}
+
+
+One to Many
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+ 
+class Post extends Model
+{
+   /**
+    * Get the comments for the blog post.
+    */
+   public function comments(): HasMany
+   {
+       return $this->hasMany(Comment::class);
+   }
+}
+use App\Models\Post;
+ 
+$comments = Post::find(1)->comments;
+ 
+foreach ($comments as $comment) {
+   // ...
+}
+$comment = Post::find(1)->comments()
+                   ->where('title', 'foo')
+                   ->first();
+return $this->hasMany(Comment::class, 'foreign_key');
+ 
+return $this->hasMany(Comment::class, 'foreign_key', 'local_key');
+  
+
+
+Hashing
+use Illuminate\Support\Facades\Hash;
+
+
+// Validate the new password length...
+ 
+       $request->user()->fill([
+           'password' => Hash::make($request->newPassword)
+       ])->save();
+
+
+
+
+
+
+
+
+
+
+ 
+Intro
+
+
+Laravel Framework
+-PHP based framework
+-MVC architecture pattern
+  M => Model
+  V => View
+   C => Controller
+-opensourse
+-Advance Framework
+
+
+Why should we learn this framework?
+-very popular and #1 PHP framework at this moment.
+-updates coming frequently ,secure , scalable.
+-so much content available over the internet 
+-MVC based
+-easy to learn.
+
+
+
+
+Composer
+* Composer is a Dependency manager
+* Package list
+* Install
+* Use ex-mailer -install-use package
+* Composer.json and composer.lock
+
+
+Installation
+
+
+Composer  create-project laravel/laravel —-
+Php artisan serve
+Directory Structure:
+* app/: Contains application logic including controllers, models, and middleware.
+* bootstrap/: Contains the application’s bootstrap files.
+* config/: Contains configuration files.
+* database/: Contains migrations, seeders, and model factories.
+* public/: Contains the entry point for the web server and publicly accessible files.
+* resources/: Contains views, raw assets (CSS, JS), and language files.
+* routes/: Contains route definitions.
+* storage/: Contains logs, cache, and file storage.
+* tests/: Contains test cases.
+
+
+
+
+First page
+
+
+view–First page.blade.php–<h1>hello world</h1>
+web-Route –Route::get(‘/Firstpage’,function () {
+Return view(‘First page’);
+});
+
+
+
+
+Controller
+
+
+Php artisan make:controller HelloController
+
+
+Namespace app\Http\Controller\HelloController;
+Public function example(){
+Echo “<h1> hello controller is working </h1>”;
+}
+Use app\Http\Controller\HelloController;
+Route::get(‘/hello’,[HelloController::class,’emample’])
+
+
+Namespace app\Http\Controller\TestController;
+Public function withParaFromURL( $name , $id){
+Echo “Name:”.  .$name ;
+<br/>
+Echo “Id:”.  .$id ;
+}
+Use app\Http\Controller\TestController;
+Route::get(‘/withPara/{ name }/{ id },[TestController::class,withParaFromURL]);
+
+
+Views
+view–First page.blade.php–<h1>hello world</h1>
+web-Route –Route::get(‘/Firstpage’,function () {
+Return view(‘First page’);
+});
+
+
+view–First page.blade.php–<h1>hello world</h1>
+web-Route –Route::get(‘/Firstpage’,function () {
+$array= array(‘name’ => ‘Mohit’ , ‘country’ => ‘India’);
+Return view(‘First page’ , $array);
+});
+view–<?php
+Echo $name;
+Echo $country;
+?>
+web-Route –Route::get(‘/Firstpage/{ name/{ country}}’,function ( $name , $country) {
+$array= array(‘name’ => $name , ‘country’ =>$country);
+Return view(‘First page’ , $array);
+})
+view–<?php
+Echo $name;
+Echo $country;
+?>
+
+
+Namespace app\Http\Controller\HelloController;
+Public function example(){
+$array= array(‘name’ => ‘Mohit’ , ‘country’ => ‘India’);
+Return view(‘First page’, $array);
+}
+Use app\Http\Controller\HelloController;
+Route::get(‘/hello’,[HelloController::class,’emample’])
+view–<?php
+Echo $name;
+Echo $country;
+?>               {{name}}
+
+
+Namespace app\Http\Controller\HelloController;
+Public function example(){
+Return view(‘First page’);
+}
+Use app\Http\Controller\HelloController;
+Route::get(‘/hello’,[HelloController::class,’emample’])
+
+
+
+
+Namespace app\Http\Controller\TestController;
+Public function withParaFromURL( $name , $id){
+Echo “Name:”.  .$name ;
+<br/>
+Echo “Id:”.  .$id ;
+}
+Use app\Http\Controller\TestController;
+Route::get(‘/withPara/{ name }/{ id },[TestController::class,withParaFromURL]);
+
+
+Blades
+
+
+Php artisan make:controller UserController
+View–test.blade.php
+<h1>This is heading</h1>
+{{ name} }  
+@if($age == 18 )
+<p> You Are Allowed </p>
+@else
+<p> You Are Not Allowed </p>
+@endif
+@for($i =1 ; $i <= 10 ; $i++)
+{{ $i }} <br/>
+@endfor
+
+
+@foreach($users as $user )
+Name: {{ $user[‘name’]}}, Age: {{$user[‘age’] }}
+
+
+
+
+
+
+ Use app\Http\Controller\UserController;
+Route::get(‘/profile’,[UserController::class,’test’]);
+Public function test(){
+$users = array(  array(‘ name’ => ‘ Php Tech Life’,’age ’=> ‘18,’country’=>’india ’),
+                          array(‘ name’ => ‘ mohit’,’age ’=> ‘22,’country’=>’india ’),
+                           array(‘ name’ => ‘john’,’age ’=> ‘25,’country’=>’india ’),
+                        );
+Return view(‘test’ ,[ ‘users’=>$users ]);
+}
+
+
+print_r($users)--------print arrat/objects/…
+
+
+Extend dynamic layout – parent@yield’ —-’   /  child @section(‘ —---’)
+View–layouts(pages)–header.blade.php / footer.blade.php/ sidebar.blade.php/ main.blade.php
+Main
+<html>
+<head>
+<title>
+@yield(‘title’)
+</title>
+</head>
+<body>
+<header>
+@include(‘header’)
+</header>
+<sidebar>
+@include(sidebar)
+</sidebar>
+<main>
+@yield(‘content’)
+</main>
+<footer>
+@include(footer)
+</footer>
+</body>
+</html>
+View–components–comp1.blade.php / comp2.blade.php
+Comp1
+@extends(‘layout/main’)
+@section(‘title’)
+test
+@endsection
+@section(‘content’)
+<h1> gcyy jgvgvj kbjhvj</h1>
+@endsection
+
+
+route—controller
+
+
+Compe2
+@extends(‘layout/main’)
+@section(‘title’)
+test
+@endsection
+@section(‘content’)
+<h1> dfdtghjjk fghhj</h1>
+@endsection
+
+
+route—controller
+
+
+Routing
+
+
+Route::get(‘/blog/{id}/{slud?}’, function ($id , $slug=’””){
+Return “ blog ID:” .$id.”<br>”.$slug;
+})->where(‘id’ , ‘ [ 0-9]+’);----yeg incoming dynamic data ko filter krta h
+
+
+Route::get(“/user”,[userController::class,’filter’])->where(‘id’ , ‘ [ 0-9]+’);
+Route::get(“/user”,[userController::class,’filter’])->name(‘filter’’);
+View – {{  url(‘/admin/product’) }}  ←-> {{ route(product) }}----isser frontend me koi change nhi krtna hota h agar route change hua h toh
+
+
+Route::group(array(‘prefix’ => ‘admin’) , function (){
+Route::get(‘/exaple_1’ ,,[userController::class,’show_1’] );
+Route::get(‘/exaple_2’ ,,[userController::class,’show_2’] );
+Route::get(‘/exaple_3’ ,,[userController::class,’show_3’] );
+});
+Route::group(array(‘prefix’ => vendor) , function (){
+Route::get(‘/exaple_1’ ,,[userController::class,’show_1’] );
+Route::get(‘/exaple_2’ ,,[userController::class,’show_2’] );
+Route::get(‘/exaple_3’ ,,[userController::class,’show_3’] );
+});;
+
+
+Route::redirect(‘/example’ , ‘example2’);
+Route::view(‘/webadmin’ , ‘welcome’ , ‘[ ‘name’ => ‘mohit’]’);
+
+
+# Interaction with table in a DB
+Types
+1. Model
+2. Query builder
+Model 
+Model —- user
+Table —--users
+
+
+Eloquent ORM (object relation maping) = Eloquent model = model 
+Php artisan make:model user
+
+
+Protected $table = ‘book’;
+
+
+
+
+Use App\Models\Book;
+Curd-
+Fetch-
+$books = Book::all();
+$books = Book::where( ‘ id ’ , 1)->get();
+
+
+Insert –
+$book = new Book;
+$book->subject = ‘physics’;
+$book->name= ‘H C Verma’;
+$book->save();
+Or
+$book = Book::insert( [‘name’ => ‘my Dummy Book’ , ‘ book_no’ => 2345] );
+
+
+
+
+Update –
+$book = Book::find( 1 );
+$book->subject = ‘physics’;
+$book->name= ‘H C Verma’;
+$book->save();
+Or
+$book = Book::where( ‘id ’ , 1)->update( [‘name’ => ‘my Dummy Book updated ’ , ‘ book_no’ => 3445] );
+
+
+Delete
+$book = Book::find( 1 );
+$book->delete();
+Or
+$book = Book::where( ‘id ’ , 1)->delete();
+Book::destroy(4,5);
+
+
+Query Builder
+Curd
+Use Illuminate\Support\Facades\DB;
+Or
+Use DB;
+Insert
+ DB::table(‘products’)->insert(
+[
+‘ name ’ => ‘ Dummy Product’,
+‘ price ’ => 100 ‘
+ ‘ category ’ => ‘ Dummy Category_1 ’,
+],
+[
+‘ name ’ => ‘ Dummy Product_2’,
+‘ price ’ => 170 ‘
+ ‘ category ’ => ‘ Dummy Category_2 ’,
+],
+[
+‘ name ’ => ‘ Dummy Product_3’,
+‘ price ’ => 400 ‘
+ ‘ category ’ => ‘ Dummy Categor_3y ’,
+],);
+
+
+Fetch
+$products = DB::table(‘products ’)->get();
+ Foreach( $products as $product ){
+
+
+Echo “Name:”.$product->name;
+Echo “price:”.$product->price;
+Echo “category :”.$product->category ;
+}
+Or
+$product = DB::table(‘products ’)->first();
+print_r($product);
+
+
+Update
+DB::table(‘products’)->where(‘id’ , 1 )->update([
+‘Name ’ => ‘ update product name’,
+‘ price ’ => 800 ‘
+ ‘ category ’ => ‘ update  Dummy Categor_ ’,
+])
+
+
+Delete
+DB::table(‘products’)->where(‘id’ , 1 )->delete();
+
+
+ Create & validate a form
+* Create a table and view
+* Create a controller
+* Define a Route 
+* Create and validate form
+* save/insert values in DB—>QB/Model
+View–form.blade.php
+<form action=”post”  action=/save””>
+{{ csrf_field() }}  / @csrf
+<label> email</label>
+<input type=”text” name=”email” placeholder=” Enteremail”/ value=” {{ old(’name”) }}”>
+@if( $errors->has(‘name’))
+     {{ @errors->first(‘name’) }}
+@endif
+
+
+<label> email</label>
+<input type=”text” name=”email” placeholder=” Enteremail” value=” {{ old(email”) }}”/>
+@if( $errors->has(email))
+    {{  @errors->first(email) }}
+@endif
+
+
+<button type=”submit”>submit</button>
+</form>
+Post api
+Validate
+if($validator->fails()){
+Return redirect(‘/create’)->withInput()->withErrors($validator);
+}
+if( $validator->passes()){
+DB::table(‘products’)->insert([
+
+
+‘ name ’ => ‘ Dummy Product_3’,
+‘ price ’ => 400 ‘
+ ‘ category ’ => ‘ Dummy Categor_3y ’,
+
+
+]);
+Or 
+$product = new Product;
+…
+…
+$product->save();
+
+
+}
+
+
+Fetch and save
+OB/model
+dd($product);
+View—
+If? $products->foreach
+
+
+edit/update
+View –edit—{{ url(‘/edit_product/’.$product->id)  }}
+→Get data 
+→value{{ $product->name }}
+→{{  url(‘/update_prod’. $product->id) }}
+→post/save/insert
+→value{{ old(‘name’) ,  $product->name }}
+
+
+
+
+Session 
+Save  get   delete   flash
+—>local
+Save  $request->session()->put(‘name’ , ‘ Mohit singh’);
+Get   $request->session()->get(‘name’);
+—>-global
+Save  session([ ‘name ’ => ‘ john marks’]);
+Get   session( ‘ name ’)
+
+
+Delete $request->session()->forget(‘name’);
+Reset $request->session()->flush(’);
+ 
+Flash $request->session()->flash(“message” , “your account has been created successfully”); 
+View–
+@if( session::get(‘message’) )
+{{ session::get(“message”) }}
+@endif
+
+
+Middleware
+What
+Create
+Register
+Types — global /  routes / grouped
+Global
+Php artisan make:middleware yourMiddleWareName
+Register in kernel.php
+
+
+if($request->age && $request-> ==20){
+Echo “you are allowed’;
+}else{
+Echo “you are not allowed”;
+}
+ Router
+Php artisan make:middleware yourMiddleWareName
+Register in kernel.php
+
+
+Route::group([‘middleware’ =>’ ageCheck’], function (){
+Route::view(‘/about’ , ‘about’);->middleware(‘hasAge’)
+Route::view(‘/contacts , contacts);
+Route::view(‘/grallery ,[GallaryController::class,index]);
+});
+
+
+
+
+if(!empty($request->secret) && $request->secret==12345){
+
+
+}
